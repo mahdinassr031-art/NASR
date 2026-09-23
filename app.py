@@ -63,7 +63,7 @@ class TookaTarhApp(tk.Tk):
             fg="white", 
             bg="#1e293b"
         )
-        title_label.pack(py=20)
+        title_label.pack(pady=20)  # اصلاح خطای py به pady
 
         # پنل دکمه‌ها
         btn_frame = tk.Frame(self, bg="#f4f6f9")
