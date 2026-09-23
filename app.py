@@ -49,67 +49,73 @@ class TookaTarhApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("سامانه مدیریت اسناد و مدارک - توکا طرح")
-        self.geometry("1100x720")
+        self.geometry("1150x750")
         self.configure(bg="#f8fafc")
         self.current_admin_pass = "Admin123"
         self.checked_files = set()  # مجموعه فایل‌های تیک خورده
         self.setup_ui()
 
     def setup_ui(self):
+        # تنظیم استایل کلی و فونت‌های بزرگتر
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("Treeview", font=("Tahoma", 10), rowheight=28)
+        style.configure("Treeview.Heading", font=("Tahoma", 10, "bold"))
+
         # هدر اصلی
-        header_frame = tk.Frame(self, bg="#1e293b", height=70)
+        header_frame = tk.Frame(self, bg="#1e293b", height=75)
         header_frame.pack(fill=tk.X)
         
         title_label = tk.Label(
             header_frame, 
             text="مدیریت امن مدارک شرکت توکا طرح", 
-            font=("Tahoma", 16, "bold"), 
+            font=("Tahoma", 18, "bold"), 
             fg="white", 
             bg="#1e293b"
         )
-        title_label.pack(pady=15)
+        title_label.pack(pady=18)
 
-        # پنل دکمه‌ها با چینش منظم شبکه (Grid) جهت جلوگیری از له شدن و بهم‌ریختگی دکمه‌ها
+        # پنل دکمه‌ها با چینش منظم شبکه (Grid)
         btn_frame = tk.Frame(self, bg="#f8fafc")
-        btn_frame.pack(fill=tk.X, padx=15, pady=10)
+        btn_frame.pack(fill=tk.X, padx=15, pady=12)
 
         for col in range(6):
             btn_frame.columnconfigure(col, weight=1, uniform="btns")
 
-        # دکمه‌های نوار ابزار بالا
+        # دکمه‌های نوار ابزار بالا با فونت بزرگتر و خوانا
         btn_add_file = tk.Button(
-            btn_frame, text="➕ افزودن مدرک (ادمین)", font=("Tahoma", 8, "bold"),
-            bg="#22c55e", fg="white", relief=tk.FLAT, pady=6, command=self.add_single_document
+            btn_frame, text="➕ افزودن مدرک (ادمین)", font=("Tahoma", 9, "bold"),
+            bg="#22c55e", fg="white", relief=tk.FLAT, pady=8, command=self.add_single_document
         )
         btn_add_file.grid(row=0, column=5, padx=3, sticky="nsew")
 
         btn_add_folder = tk.Button(
-            btn_frame, text="📁 بارگذاری از پوشه (ادمین)", font=("Tahoma", 8, "bold"),
-            bg="#0d9488", fg="white", relief=tk.FLAT, pady=6, command=self.add_folder_documents
+            btn_frame, text="📁 بارگذاری از پوشه (ادمین)", font=("Tahoma", 9, "bold"),
+            bg="#0d9488", fg="white", relief=tk.FLAT, pady=8, command=self.add_folder_documents
         )
         btn_add_folder.grid(row=0, column=4, padx=3, sticky="nsew")
 
         btn_delete = tk.Button(
-            btn_frame, text="❌ حذف مدرک (ادمین)", font=("Tahoma", 8, "bold"),
-            bg="#ef4444", fg="white", relief=tk.FLAT, pady=6, command=self.delete_document
+            btn_frame, text="❌ حذف مدرک (ادمین)", font=("Tahoma", 9, "bold"),
+            bg="#ef4444", fg="white", relief=tk.FLAT, pady=8, command=self.delete_document
         )
         btn_delete.grid(row=0, column=3, padx=3, sticky="nsew")
 
         btn_open_loc = tk.Button(
-            btn_frame, text="📂 پوشه ذخیره اصلی", font=("Tahoma", 8, "bold"),
-            bg="#0284c7", fg="white", relief=tk.FLAT, pady=6, command=self.open_file_location
+            btn_frame, text="🔒 پوشه ذخیره (ادمین)", font=("Tahoma", 9, "bold"),
+            bg="#0284c7", fg="white", relief=tk.FLAT, pady=8, command=self.open_file_location
         )
         btn_open_loc.grid(row=0, column=2, padx=3, sticky="nsew")
 
         btn_export = tk.Button(
-            btn_frame, text="📦 خروجی مدارک انتخاب‌شده", font=("Tahoma", 8, "bold"),
-            bg="#eab308", fg="black", relief=tk.FLAT, pady=6, command=self.export_documents
+            btn_frame, text="📦 خروجی انتخاب‌شده‌ها", font=("Tahoma", 9, "bold"),
+            bg="#eab308", fg="black", relief=tk.FLAT, pady=8, command=self.export_documents
         )
         btn_export.grid(row=0, column=1, padx=3, sticky="nsew")
 
         btn_view = tk.Button(
-            btn_frame, text="👁️ باز کردن / مشاهده", font=("Tahoma", 8, "bold"),
-            bg="#6366f1", fg="white", relief=tk.FLAT, pady=6, command=self.open_selected_document
+            btn_frame, text="👁️ باز کردن / مشاهده", font=("Tahoma", 9, "bold"),
+            bg="#6366f1", fg="white", relief=tk.FLAT, pady=8, command=self.open_selected_document
         )
         btn_view.grid(row=0, column=0, padx=3, sticky="nsew")
 
@@ -120,10 +126,13 @@ class TookaTarhApp(tk.Tk):
         paned = ttk.PanedWindow(main_container, orient=tk.HORIZONTAL)
         paned.pack(fill=tk.BOTH, expand=True)
 
-        # پنل چپ: لیست فایل‌ها همراه با چک‌باکس
+        # پنل چپ: لیست فایل‌ها
         left_frame = tk.Frame(paned, bg="#ffffff")
-        tk.Label(left_frame, text="📄 لیست کلیه مدارک و فایل‌ها (جهت تغییر تیک، فایل را انتخاب و دکمه پایین را بزنید)", 
-                 font=("Tahoma", 9, "bold"), bg="#ffffff", fg="#334155").pack(anchor=tk.E, padx=10, pady=5)
+        tk.Label(
+            left_frame, 
+            text="📄 لیست کلیه مدارک (جهت انتخاب کلیک کنید | برای باز کردن دوبار کلیک کنید)", 
+            font=("Tahoma", 10, "bold"), bg="#ffffff", fg="#334155"
+        ).pack(anchor=tk.E, padx=10, pady=8)
 
         columns = ("check", "filename", "size")
         self.file_tree = ttk.Treeview(left_frame, columns=columns, show="headings", selectmode="browse")
@@ -131,31 +140,28 @@ class TookaTarhApp(tk.Tk):
         self.file_tree.heading("filename", text="نام مدرک")
         self.file_tree.heading("size", text="حجم")
         
-        self.file_tree.column("check", anchor=tk.CENTER, width=60)
-        self.file_tree.column("filename", anchor=tk.E, width=420)
-        self.file_tree.column("size", anchor=tk.CENTER, width=100)
+        self.file_tree.column("check", anchor=tk.CENTER, width=70)
+        self.file_tree.column("filename", anchor=tk.E, width=450)
+        self.file_tree.column("size", anchor=tk.CENTER, width=110)
         self.file_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # دکمه تغییر وضعیت تیک
-        tk.Button(
-            left_frame, text="☑️ / ☐ تغییر وضعیت تیک فایل انتخاب‌شده", font=("Tahoma", 9, "bold"),
-            bg="#0f766e", fg="white", relief=tk.FLAT, pady=5,
-            command=self.toggle_check_selected
-        ).pack(fill=tk.X, padx=5, pady=5)
+        # رویداد کلیک مستقیم برای تیک زدن و دوبار کلیک برای باز کردن فایل
+        self.file_tree.bind("", self.on_file_click)
+        self.file_tree.bind("", lambda event: self.open_selected_document())
 
         # پنل راست: لیست پوشه‌ها
         right_frame = tk.Frame(paned, bg="#ffffff")
-        tk.Label(right_frame, text="📁 دسته پوشه‌ها", font=("Tahoma", 9, "bold"), bg="#ffffff", fg="#334155").pack(anchor=tk.E, padx=10, pady=5)
+        tk.Label(
+            right_frame, 
+            text="📁 دسته پوشه‌ها", 
+            font=("Tahoma", 10, "bold"), bg="#ffffff", fg="#334155"
+        ).pack(anchor=tk.E, padx=10, pady=8)
         
         self.folder_tree = ttk.Treeview(right_frame, show="tree", selectmode="browse")
         self.folder_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # جایگزین دستور خطاساز bind با یک دکمه کاملا ایمن
-        tk.Button(
-            right_frame, text="نمایش فایل‌های این پوشه", font=("Tahoma", 9, "bold"),
-            bg="#3b82f6", fg="white", relief=tk.FLAT, pady=5,
-            command=self.on_folder_select_btn
-        ).pack(fill=tk.X, padx=5, pady=5)
+        # رویداد کلیک مستقیم روی پوشه برای بارگذاری سریع بدون دکمه اضافی
+        self.folder_tree.bind("", self.on_folder_click)
 
         paned.add(left_frame, weight=3)
         paned.add(right_frame, weight=1)
@@ -192,13 +198,11 @@ class TookaTarhApp(tk.Tk):
         self.folder_tree.selection_set(root_node)
         self.update_file_list("همه مدارک")
 
-    def on_folder_select_btn(self):
+    def on_folder_click(self, event):
         selected_item = self.folder_tree.selection()
         if selected_item:
             folder_name = self.folder_tree.item(selected_item[0], "text")
             self.update_file_list(folder_name)
-        else:
-            self.update_file_list("همه مدارک")
 
     def update_file_list(self, folder_name):
         for item in self.file_tree.get_children():
@@ -218,13 +222,16 @@ class TookaTarhApp(tk.Tk):
                     display_name = f.replace('.enc', '').replace(folder_name + "__", "")
 
                 if show_file:
-                    check_icon = "☑" if f in self.checked_files else "☐"
+                    check_icon = "[ ☑ ]" if f in self.checked_files else "[ ☐ ]"
                     self.file_tree.insert("", tk.END, values=(check_icon, display_name, f"{size_kb} KB", f))
 
-    def toggle_check_selected(self):
+    def on_file_click(self, event):
+        region = self.file_tree.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+
         selected_item = self.file_tree.selection()
         if not selected_item:
-            messagebox.showwarning("راهنما", "لطفاً ابتدا یک فایل را از لیست انتخاب کنید.")
             return
 
         values = self.file_tree.item(selected_item[0], "values")
@@ -234,10 +241,10 @@ class TookaTarhApp(tk.Tk):
         real_enc_filename = values[3]
         if real_enc_filename in self.checked_files:
             self.checked_files.remove(real_enc_filename)
-            new_icon = "☐"
+            new_icon = "[ ☐ ]"
         else:
             self.checked_files.add(real_enc_filename)
-            new_icon = "☑"
+            new_icon = "[ ☑ ]"
 
         self.file_tree.item(selected_item[0], values=(new_icon, values[1], values[2], values[3]))
 
@@ -356,7 +363,7 @@ class TookaTarhApp(tk.Tk):
             except Exception:
                 pass
 
-        messagebox.showinfo("خروجی موفق", f"تعداد {success_count} مدرک انتخاب‌شده با فرمت اصلی‌شان در پوشه مقصد ذخیره شدند.")
+        messagebox.showinfo("خروجی موفق", f"تعداد {success_count} مدرک انتخاب‌شده با موفقیت ذخیره گردید.")
 
     def delete_document(self):
         selected_items = self.file_tree.selection()
@@ -382,6 +389,8 @@ class TookaTarhApp(tk.Tk):
                 messagebox.showerror("خطا", str(e))
 
     def open_file_location(self):
+        if not self.prompt_admin_password():
+            return
         os.startfile(DOCS_DIR)
 
 if __name__ == "__main__":
