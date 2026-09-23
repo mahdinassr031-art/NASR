@@ -69,7 +69,7 @@ class TookaTarhApp(tk.Tk):
         )
         title_label.pack(pady=15)
 
-        # پنل دکمه‌ها با چینش منظم شبکه (Grid) جهت جلوگیری از بهم‌ریختگی دکمه‌ها
+        # پنل دکمه‌ها با چینش منظم شبکه (Grid) جهت جلوگیری از له شدن و بهم‌ریختگی دکمه‌ها
         btn_frame = tk.Frame(self, bg="#f8fafc")
         btn_frame.pack(fill=tk.X, padx=15, pady=10)
 
@@ -149,7 +149,13 @@ class TookaTarhApp(tk.Tk):
         
         self.folder_tree = ttk.Treeview(right_frame, show="tree", selectmode="browse")
         self.folder_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        self.folder_tree.bind("<>", self.on_folder_select_event)
+        
+        # جایگزین دستور خطاساز bind با یک دکمه کاملا ایمن
+        tk.Button(
+            right_frame, text="نمایش فایل‌های این پوشه", font=("Tahoma", 9, "bold"),
+            bg="#3b82f6", fg="white", relief=tk.FLAT, pady=5,
+            command=self.on_folder_select_btn
+        ).pack(fill=tk.X, padx=5, pady=5)
 
         paned.add(left_frame, weight=3)
         paned.add(right_frame, weight=1)
@@ -186,11 +192,13 @@ class TookaTarhApp(tk.Tk):
         self.folder_tree.selection_set(root_node)
         self.update_file_list("همه مدارک")
 
-    def on_folder_select_event(self, event):
+    def on_folder_select_btn(self):
         selected_item = self.folder_tree.selection()
         if selected_item:
             folder_name = self.folder_tree.item(selected_item[0], "text")
             self.update_file_list(folder_name)
+        else:
+            self.update_file_list("همه مدارک")
 
     def update_file_list(self, folder_name):
         for item in self.file_tree.get_children():
