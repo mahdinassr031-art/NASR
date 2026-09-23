@@ -27,6 +27,10 @@ if not os.path.exists(PASS_FILE):
     with open(PASS_FILE, "w") as f:
         f.write(DEFAULT_ADMIN_PASS_HASH)
 
+# --- تعریف امن نام رویدادها جهت جلوگیری از حذف علائم < > هنگام کپی ---
+EVT_CLICK = chr(60) + "ButtonRelease-1" + chr(62)
+EVT_DOUBLE = chr(60) + "Double-1" + chr(62)
+
 # --- توابع رمزنگاری ---
 MASTER_KEY = b'tooka_tarh_secure_salt_2026'
 
@@ -59,7 +63,7 @@ class TookaTarhApp(tk.Tk):
         # تنظیم استایل کلی و فونت‌های بزرگتر
         style = ttk.Style()
         style.theme_use("clam")
-        style.configure("Treeview", font=("Tahoma", 10), rowheight=28)
+        style.configure("Treeview", font=("Tahoma", 10), rowheight=30)
         style.configure("Treeview.Heading", font=("Tahoma", 10, "bold"))
 
         # هدر اصلی
@@ -140,14 +144,14 @@ class TookaTarhApp(tk.Tk):
         self.file_tree.heading("filename", text="نام مدرک")
         self.file_tree.heading("size", text="حجم")
         
-        self.file_tree.column("check", anchor=tk.CENTER, width=70)
+        self.file_tree.column("check", anchor=tk.CENTER, width=75)
         self.file_tree.column("filename", anchor=tk.E, width=450)
         self.file_tree.column("size", anchor=tk.CENTER, width=110)
         self.file_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # رویداد کلیک مستقیم برای تیک زدن و دوبار کلیک برای باز کردن فایل
-        self.file_tree.bind("", self.on_file_click)
-        self.file_tree.bind("", lambda event: self.open_selected_document())
+        # اتصال رویدادهای کلیک تک و دوبار کلیک
+        self.file_tree.bind(EVT_CLICK, self.on_file_click)
+        self.file_tree.bind(EVT_DOUBLE, lambda event: self.open_selected_document())
 
         # پنل راست: لیست پوشه‌ها
         right_frame = tk.Frame(paned, bg="#ffffff")
@@ -160,8 +164,8 @@ class TookaTarhApp(tk.Tk):
         self.folder_tree = ttk.Treeview(right_frame, show="tree", selectmode="browse")
         self.folder_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # رویداد کلیک مستقیم روی پوشه برای بارگذاری سریع بدون دکمه اضافی
-        self.folder_tree.bind("", self.on_folder_click)
+        # کلیک مستقیم روی پوشه‌ها
+        self.folder_tree.bind(EVT_CLICK, self.on_folder_click)
 
         paned.add(left_frame, weight=3)
         paned.add(right_frame, weight=1)
