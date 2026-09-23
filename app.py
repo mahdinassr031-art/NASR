@@ -69,11 +69,10 @@ class TookaTarhApp(tk.Tk):
         )
         title_label.pack(pady=15)
 
-        # پنل دکمه‌ها با چینش منظم شبکه (Grid) جهت جلوگیری از بهم‌ریختگی دکمه آبی
+        # پنل دکمه‌ها با چینش منظم شبکه (Grid) جهت جلوگیری از بهم‌ریختگی دکمه‌ها
         btn_frame = tk.Frame(self, bg="#f8fafc")
         btn_frame.pack(fill=tk.X, padx=15, pady=10)
 
-        # وزن‌دهی به ستون‌ها برای اندازه یکسان
         for col in range(6):
             btn_frame.columnconfigure(col, weight=1, uniform="btns")
 
@@ -251,7 +250,6 @@ class TookaTarhApp(tk.Tk):
         if not self.prompt_admin_password():
             return
 
-        # فیلتر کلیه فایل‌ها (JPG, PNG, Word, Excel, PDF و ...)
         file_path = filedialog.askopenfilename(
             title="انتخاب فایل مدرک (تصویر، فایل ورد، اکسل، PDF و غیره)", 
             filetypes=[("All Files", "*.*")]
