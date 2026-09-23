@@ -1,0 +1,74 @@
+name: Build Executable
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install cryptography pillow pyinstaller
+
+    - name: Ensure app.py Exists
+      shell: powershell
+      run: |
+        if (!(Test-Path "app.py")) {
+          @'
+import os, sys, hashlib
+from base64 import urlsafe_b64encode
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox, simpledialog
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+APP_NAME = "CompanyDocs_TookaTarh"
+BASE_DATA_DIR = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), APP_NAME)
+DOCS_DIR = os.path.join(BASE_DATA_DIR, "EncryptedDocs")
+CONFIG_DIR = os.path.join(BASE_DATA_DIR, "Config")
+
+os.makedirs(DOCS_DIR, exist_ok=True)
+os.makedirs(CONFIG_DIR, exist_ok=True)
+
+class TookaTarhApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("سامانه مدیریت اسناد و مدارک - توکا طرح")
+        self.geometry("800x600")
+        label = tk.Label(self, text="سامانه مدیریت مدارک شرکت توکا طرح", font=("Tahoma", 14))
+        label.pack(pady=50)
+
+if __name__ == "__main__":
+    app = TookaTarhApp()
+    app.mainloop()
+'@ | Out-File -FilePath "app.py" -Encoding utf8
+        }
+
+    - name: Build EXE with PyInstaller
+      run: |
+        pyinstaller --noconfirm --onedir --windowed --name "TookaTarh_DocManager" app.py
+
+    - name: Compress Output Folder
+      shell: powershell
+      run: |
+        Compress-Archive -Path "dist/TookaTarh_DocManager/*" -DestinationPath "TookaTarh_DocManager.zip"
+
+    - name: Upload Executable Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: TookaTarh_Executable_Program
+        path: TookaTarh_DocManager.zip
