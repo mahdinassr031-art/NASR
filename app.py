@@ -3,7 +3,6 @@ import sys
 import shutil
 import hashlib
 import tempfile
-import math
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, simpledialog
 from base64 import urlsafe_b64encode
@@ -172,7 +171,7 @@ class TookaTarhApp(tk.Tk):
 
         self.folder_tree.selection_set(root_node)
 
-    def on_folder_select(self, event):
+    def on_folder_select(self, event=None):
         selected_item = self.folder_tree.selection()
         if not selected_item:
             return
