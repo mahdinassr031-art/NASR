@@ -49,9 +49,10 @@ class TookaTarhApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("سامانه مدیریت اسناد و مدارک - توکا طرح")
-        self.geometry("1000x700")
+        self.geometry("1050x700")
         self.configure(bg="#f8fafc")
         self.current_admin_pass = "Admin123"
+        self.checked_files = set()  # مجموعه فایل‌های تیک خورده
         self.setup_ui()
 
     def setup_ui(self):
@@ -75,38 +76,38 @@ class TookaTarhApp(tk.Tk):
         # دکمه‌های نیازمند رمز ادمین (سمت راست)
         tk.Button(
             btn_frame, text="➕ افزودن مدرک (ادمین)", font=("Tahoma", 9, "bold"),
-            bg="#22c55e", fg="white", relief=tk.FLAT, padx=10, pady=6,
+            bg="#22c55e", fg="white", relief=tk.FLAT, padx=12, pady=6,
             command=self.add_single_document
         ).pack(side=tk.RIGHT, padx=4)
 
         tk.Button(
             btn_frame, text="📁 بارگذاری از پوشه (ادمین)", font=("Tahoma", 9, "bold"),
-            bg="#0d9488", fg="white", relief=tk.FLAT, padx=10, pady=6,
+            bg="#0d9488", fg="white", relief=tk.FLAT, padx=12, pady=6,
             command=self.add_folder_documents
         ).pack(side=tk.RIGHT, padx=4)
 
         tk.Button(
             btn_frame, text="❌ حذف مدرک (ادمین)", font=("Tahoma", 9, "bold"),
-            bg="#ef4444", fg="white", relief=tk.FLAT, padx=10, pady=6,
+            bg="#ef4444", fg="white", relief=tk.FLAT, padx=12, pady=6,
             command=self.delete_document
         ).pack(side=tk.RIGHT, padx=4)
 
-        # دکمه‌های عمومی بدون نیاز به رمز (سمت چپ)
+        # دکمه‌های عمومی بدون نیاز به رمز (سمت چپ) - اصلاح چیدمان و حذف دکمه اضافی
         tk.Button(
             btn_frame, text="👁️ باز کردن / مشاهده", font=("Tahoma", 9, "bold"),
-            bg="#6366f1", fg="white", relief=tk.FLAT, padx=10, pady=6,
+            bg="#6366f1", fg="white", relief=tk.FLAT, padx=12, pady=6,
             command=self.open_selected_document
         ).pack(side=tk.LEFT, padx=4)
 
         tk.Button(
-            btn_frame, text="📦 خروجی مدارک برای پروژه", font=("Tahoma", 9, "bold"),
-            bg="#eab308", fg="black", relief=tk.FLAT, padx=10, pady=6,
+            btn_frame, text="📦 خروجی مدارک انتخاب شده", font=("Tahoma", 9, "bold"),
+            bg="#eab308", fg="black", relief=tk.FLAT, padx=12, pady=6,
             command=self.export_documents
         ).pack(side=tk.LEFT, padx=4)
 
         tk.Button(
             btn_frame, text="📂 پوشه ذخیره", font=("Tahoma", 9),
-            bg="#0284c7", fg="white", relief=tk.FLAT, padx=10, pady=6,
+            bg="#0284c7", fg="white", relief=tk.FLAT, padx=12, pady=6,
             command=self.open_file_location
         ).pack(side=tk.LEFT, padx=4)
 
@@ -123,25 +124,30 @@ class TookaTarhApp(tk.Tk):
         
         self.folder_tree = ttk.Treeview(right_frame, show="tree", selectmode="browse")
         self.folder_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        # دکمه نمایش محتوای پوشه انتخاب‌شده بدون نیاز به bind
+
         tk.Button(
             right_frame, text="نمایش فایل‌های پوشه انتخاب‌شده", font=("Tahoma", 8, "bold"),
-            bg="#3b82f6", fg="white", relief=tk.FLAT, pady=4,
+            bg="#3b82f6", fg="white", relief=tk.FLAT, pady=5,
             command=self.on_folder_select
         ).pack(fill=tk.X, padx=5, pady=5)
 
-        # پنل چپ: لیست فایل‌های PDF
+        # پنل چپ: لیست فایل‌های PDF همراه با ستون انتخاب (تیک‌دار)
         left_frame = tk.Frame(paned, bg="#ffffff")
-        tk.Label(left_frame, text="📄 فایل‌های PDF داخل پوشه", font=("Tahoma", 10, "bold"), bg="#ffffff", fg="#334155").pack(anchor=tk.E, padx=10, pady=5)
+        tk.Label(left_frame, text="📄 فایل‌های PDF (کلیک کنید تا تیک بخورد)", font=("Tahoma", 10, "bold"), bg="#ffffff", fg="#334155").pack(anchor=tk.E, padx=10, pady=5)
 
-        columns = ("filename", "size")
-        self.file_tree = ttk.Treeview(left_frame, columns=columns, show="headings", selectmode="extended")
+        columns = ("check", "filename", "size")
+        self.file_tree = ttk.Treeview(left_frame, columns=columns, show="headings", selectmode="browse")
+        self.file_tree.heading("check", text="انتخاب")
         self.file_tree.heading("filename", text="نام مدرک")
         self.file_tree.heading("size", text="حجم")
-        self.file_tree.column("filename", anchor=tk.E, width=400)
-        self.file_tree.column("size", anchor=tk.CENTER, width=120)
+        
+        self.file_tree.column("check", anchor=tk.CENTER, width=60)
+        self.file_tree.column("filename", anchor=tk.E, width=380)
+        self.file_tree.column("size", anchor=tk.CENTER, width=100)
         self.file_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # برای تیک زدن راحت با کلیک رو هر فایل
+        self.file_tree.bind("", self.toggle_check)
 
         paned.add(left_frame, weight=3)
         paned.add(right_frame, weight=1)
@@ -195,13 +201,36 @@ class TookaTarhApp(tk.Tk):
                 file_path = os.path.join(DOCS_DIR, f)
                 size_kb = round(os.path.getsize(file_path) / 1024, 2)
                 
+                show_file = False
                 if folder_name == "همه مدارک":
+                    show_file = True
                     display_name = f.replace('.enc', '').rsplit('__', 1)[-1]
-                    self.file_tree.insert("", tk.END, values=(display_name, f"{size_kb} KB", f))
-                else:
-                    if f.startswith(folder_name + "__"):
-                        display_name = f.replace('.enc', '').replace(folder_name + "__", "")
-                        self.file_tree.insert("", tk.END, values=(display_name, f"{size_kb} KB", f))
+                elif f.startswith(folder_name + "__"):
+                    show_file = True
+                    display_name = f.replace('.enc', '').replace(folder_name + "__", "")
+
+                if show_file:
+                    check_icon = "☑" if f in self.checked_files else "☐"
+                    self.file_tree.insert("", tk.END, values=(check_icon, display_name, f"{size_kb} KB", f))
+
+    def toggle_check(self, event):
+        selected_item = self.file_tree.selection()
+        if not selected_item:
+            return
+
+        values = self.file_tree.item(selected_item[0], "values")
+        if not values or len(values) < 4:
+            return
+
+        real_enc_filename = values[3]
+        if real_enc_filename in self.checked_files:
+            self.checked_files.remove(real_enc_filename)
+            new_icon = "☐"
+        else:
+            self.checked_files.add(real_enc_filename)
+            new_icon = "☑"
+
+        self.file_tree.item(selected_item[0], values=(new_icon, values[1], values[2], values[3]))
 
     def encrypt_and_save(self, src_path, target_folder="عمومی"):
         file_name = os.path.basename(src_path)
@@ -268,7 +297,7 @@ class TookaTarhApp(tk.Tk):
             return
 
         item_values = self.file_tree.item(selected_items[0], "values")
-        real_enc_filename = item_values[2] if len(item_values) > 2 else item_values[0] + ".enc"
+        real_enc_filename = item_values[3] if len(item_values) > 3 else item_values[1] + ".enc"
         enc_path = os.path.join(DOCS_DIR, real_enc_filename)
 
         try:
@@ -277,7 +306,7 @@ class TookaTarhApp(tk.Tk):
                 data = f_in.read()
             decrypted = cipher.decrypt(data)
 
-            temp_file = os.path.join(tempfile.gettempdir(), item_values[0])
+            temp_file = os.path.join(tempfile.gettempdir(), item_values[1])
             with open(temp_file, "wb") as f_out:
                 f_out.write(decrypted)
 
@@ -286,9 +315,8 @@ class TookaTarhApp(tk.Tk):
             messagebox.showerror("خطا", "رمزگشایی فایل با خطا مواجه شد.")
 
     def export_documents(self):
-        selected_items = self.file_tree.selection()
-        if not selected_items:
-            messagebox.showwarning("هشدار", "لطفاً مدرک یا مدارک مورد نظر جهت خروجی را از لیست سمت چپ انتخاب کنید.")
+        if not self.checked_files:
+            messagebox.showwarning("هشدار", "هیچ مدرکی تیک نخورده است! لطفاً روی مدارک مورد نظر کلیک کنید تا تیک (☑) بخورند.")
             return
 
         export_dir = filedialog.askdirectory(title="انتخاب محل ذخیره خروجی پروژه")
@@ -298,12 +326,12 @@ class TookaTarhApp(tk.Tk):
         success_count = 0
         cipher = Fernet(get_cipher_key("Admin123"))
 
-        for item in selected_items:
-            item_values = self.file_tree.item(item, "values")
-            display_name = item_values[0]
-            real_enc_filename = item_values[2] if len(item_values) > 2 else display_name + ".enc"
-            enc_path = os.path.join(DOCS_DIR, real_enc_filename)
+        for enc_filename in list(self.checked_files):
+            enc_path = os.path.join(DOCS_DIR, enc_filename)
+            if not os.path.exists(enc_path):
+                continue
 
+            display_name = enc_filename.replace('.enc', '').rsplit('__', 1)[-1]
             try:
                 with open(enc_path, "rb") as f_in:
                     data = f_in.read()
@@ -316,7 +344,7 @@ class TookaTarhApp(tk.Tk):
             except Exception:
                 pass
 
-        messagebox.showinfo("خروجی موفق", f"تعداد {success_count} مدرک با موفقیت در پوشه انتخاب‌شده ذخیره گردید.")
+        messagebox.showinfo("خروجی موفق", f"تعداد {success_count} مدرک تیک‌خورده با موفقیت در پوشه انتخاب‌شده ذخیره گردید.")
 
     def delete_document(self):
         selected_items = self.file_tree.selection()
@@ -328,12 +356,14 @@ class TookaTarhApp(tk.Tk):
             return
 
         item_values = self.file_tree.item(selected_items[0], "values")
-        real_enc_filename = item_values[2] if len(item_values) > 2 else item_values[0] + ".enc"
+        real_enc_filename = item_values[3] if len(item_values) > 3 else item_values[1] + ".enc"
         file_path = os.path.join(DOCS_DIR, real_enc_filename)
 
         if messagebox.askyesno("تایید حذف", "آیا از حذف این مدرک اطمینان دارید؟"):
             try:
                 os.remove(file_path)
+                if real_enc_filename in self.checked_files:
+                    self.checked_files.remove(real_enc_filename)
                 messagebox.showinfo("حذف شد", "مدرک با موفقیت حذف شد.")
                 self.refresh_folders()
             except Exception as e:
