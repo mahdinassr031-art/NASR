@@ -124,8 +124,12 @@ class TookaTarhApp(tk.Tk):
         self.folder_tree = ttk.Treeview(right_frame, show="tree", selectmode="browse")
         self.folder_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # جایگزینی کاملاً ایمن با کلیک ماوس به جای event متنی bind
-        self.folder_tree.bind("", self.on_folder_click)
+        # دکمه نمایش محتوای پوشه انتخاب‌شده بدون نیاز به bind
+        tk.Button(
+            right_frame, text="نمایش فایل‌های پوشه انتخاب‌شده", font=("Tahoma", 8, "bold"),
+            bg="#3b82f6", fg="white", relief=tk.FLAT, pady=4,
+            command=self.on_folder_select
+        ).pack(fill=tk.X, padx=5, pady=5)
 
         # پنل چپ: لیست فایل‌های PDF
         left_frame = tk.Frame(paned, bg="#ffffff")
@@ -174,11 +178,13 @@ class TookaTarhApp(tk.Tk):
         self.folder_tree.selection_set(root_node)
         self.update_file_list("همه مدارک")
 
-    def on_folder_click(self, event):
+    def on_folder_select(self):
         selected_item = self.folder_tree.selection()
         if selected_item:
             folder_name = self.folder_tree.item(selected_item[0], "text")
             self.update_file_list(folder_name)
+        else:
+            self.update_file_list("همه مدارک")
 
     def update_file_list(self, folder_name):
         for item in self.file_tree.get_children():
