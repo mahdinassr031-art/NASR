@@ -45,35 +45,6 @@ def verify_admin_password(password: str) -> bool:
         stored_hash = f.read().strip()
     return hashlib.sha256(password.encode()).hexdigest() == stored_hash
 
-# --- رسم لوگوی گرافیکی چرخ‌دنده و پرنده توکا ---
-def draw_tooka_logo(canvas, cx, cy, radius):
-    canvas.delete("all")
-    teeth = 12
-    outer_r = radius
-    inner_r = radius * 0.75
-    gear_pts = []
-    
-    for i in range(teeth * 2):
-        angle = i * math.pi / teeth
-        r = outer_r if i % 2 == 0 else inner_r
-        gear_pts.append(cx + r * math.cos(angle))
-        gear_pts.append(cy + r * math.sin(angle))
-        
-    canvas.create_polygon(gear_pts, fill="#f1f5f9", outline="#cbd5e1", width=2)
-    canvas.create_oval(cx - inner_r * 0.5, cy - inner_r * 0.5, cx + inner_r * 0.5, cy + inner_r * 0.5, fill="#ffffff", outline="#cbd5e1")
-
-    bird_pts = [
-        cx - radius * 0.2, cy + radius * 0.1,
-        cx - radius * 0.1, cy - radius * 0.2,
-        cx + radius * 0.1, cy - radius * 0.25,
-        cx + radius * 0.35, cy - radius * 0.15,
-        cx + radius * 0.15, cy + radius * 0.1,
-        cx + radius * 0.25, cy + radius * 0.3,
-        cx, cy + radius * 0.2,
-    ]
-    canvas.create_polygon(bird_pts, fill="#3b82f6", outline="#1d4ed8")
-    canvas.create_polygon([cx + radius * 0.35, cy - radius * 0.15, cx + radius * 0.48, cy - radius * 0.1, cx + radius * 0.32, cy - radius * 0.05], fill="#f59e0b")
-
 # --- کلاس اصلی برنامه ---
 class TookaTarhApp(tk.Tk):
     def __init__(self):
