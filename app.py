@@ -92,7 +92,7 @@ class TookaTarhApp(tk.Tk):
             command=self.delete_document
         ).pack(side=tk.RIGHT, padx=4)
 
-        # دکمه‌های عمومی بدون نیاز به رمز (سمت چپ) - اصلاح چیدمان و حذف دکمه اضافی
+        # دکمه‌های عمومی بدون نیاز به رمز (سمت چپ)
         tk.Button(
             btn_frame, text="👁️ باز کردن / مشاهده", font=("Tahoma", 9, "bold"),
             bg="#6366f1", fg="white", relief=tk.FLAT, padx=12, pady=6,
@@ -133,7 +133,7 @@ class TookaTarhApp(tk.Tk):
 
         # پنل چپ: لیست فایل‌های PDF همراه با ستون انتخاب (تیک‌دار)
         left_frame = tk.Frame(paned, bg="#ffffff")
-        tk.Label(left_frame, text="📄 فایل‌های PDF (کلیک کنید تا تیک بخورد)", font=("Tahoma", 10, "bold"), bg="#ffffff", fg="#334155").pack(anchor=tk.E, padx=10, pady=5)
+        tk.Label(left_frame, text="📄 فایل‌های PDF (جهت تغییر تیک، فایل را انتخاب و دکمه را بزنید)", font=("Tahoma", 10, "bold"), bg="#ffffff", fg="#334155").pack(anchor=tk.E, padx=10, pady=5)
 
         columns = ("check", "filename", "size")
         self.file_tree = ttk.Treeview(left_frame, columns=columns, show="headings", selectmode="browse")
@@ -146,8 +146,12 @@ class TookaTarhApp(tk.Tk):
         self.file_tree.column("size", anchor=tk.CENTER, width=100)
         self.file_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # برای تیک زدن راحت با کلیک رو هر فایل
-        self.file_tree.bind("", self.toggle_check)
+        # دکمه مستقیم ثبت/برداشتن تیک بدون نیاز به bind
+        tk.Button(
+            left_frame, text="☑️ / ☐ تغییر وضعیت تیک فایل انتخاب‌شده", font=("Tahoma", 9, "bold"),
+            bg="#0f766e", fg="white", relief=tk.FLAT, pady=4,
+            command=self.toggle_check_selected
+        ).pack(fill=tk.X, padx=5, pady=5)
 
         paned.add(left_frame, weight=3)
         paned.add(right_frame, weight=1)
@@ -213,9 +217,10 @@ class TookaTarhApp(tk.Tk):
                     check_icon = "☑" if f in self.checked_files else "☐"
                     self.file_tree.insert("", tk.END, values=(check_icon, display_name, f"{size_kb} KB", f))
 
-    def toggle_check(self, event):
+    def toggle_check_selected(self):
         selected_item = self.file_tree.selection()
         if not selected_item:
+            messagebox.showwarning("راهنما", "لطفاً ابتدا یک فایل را از لیست انتخاب کنید.")
             return
 
         values = self.file_tree.item(selected_item[0], "values")
@@ -316,7 +321,7 @@ class TookaTarhApp(tk.Tk):
 
     def export_documents(self):
         if not self.checked_files:
-            messagebox.showwarning("هشدار", "هیچ مدرکی تیک نخورده است! لطفاً روی مدارک مورد نظر کلیک کنید تا تیک (☑) بخورند.")
+            messagebox.showwarning("هشدار", "هیچ مدرکی تیک نخورده است! لطفاً مدارک را انتخاب و تیک بزنید.")
             return
 
         export_dir = filedialog.askdirectory(title="انتخاب محل ذخیره خروجی پروژه")
