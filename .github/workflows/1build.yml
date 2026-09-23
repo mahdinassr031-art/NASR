@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout Code
@@ -27,8 +29,18 @@ jobs:
       run: |
         pyinstaller --noconfirm --onedir --windowed --name "TookaTarh_DocManager" app.py
 
-    - name: Upload Executable Directory
-      uses: actions/upload-artifact@v4
+    - name: Compress Output Folder
+      shell: powershell
+      run: |
+        Compress-Archive -Path "dist/TookaTarh_DocManager/*" -DestinationPath "TookaTarh_DocManager.zip"
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
       with:
-        name: TookaTarh_Executable_Program
-        path: dist/TookaTarh_DocManager/
+        files: TookaTarh_DocManager.zip
+        tag_name: v1.0.${{ github.run_number }}
+        name: Release v1.0.${{ github.run_number }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
