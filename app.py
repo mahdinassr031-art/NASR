@@ -47,7 +47,7 @@ def verify_admin_password(password: str) -> bool:
 
 # --- رسم لوگوی گرافیکی چرخ‌دنده و پرنده توکا ---
 def draw_tooka_logo(canvas, cx, cy, radius):
-    # رسم چرخ‌دنده
+    canvas.delete("all")
     teeth = 12
     outer_r = radius
     inner_r = radius * 0.75
@@ -59,10 +59,9 @@ def draw_tooka_logo(canvas, cx, cy, radius):
         gear_pts.append(cx + r * math.cos(angle))
         gear_pts.append(cy + r * math.sin(angle))
         
-    canvas.create_polygon(gear_pts, fill="#e2e8f0", outline="#cbd5e1", width=2)
-    canvas.create_oval(cx - inner_r * 0.5, cy - inner_r * 0.5, cx + inner_r * 0.5, cy + inner_r * 0.5, fill="#f8fafc", outline="#cbd5e1")
+    canvas.create_polygon(gear_pts, fill="#f1f5f9", outline="#cbd5e1", width=2)
+    canvas.create_oval(cx - inner_r * 0.5, cy - inner_r * 0.5, cx + inner_r * 0.5, cy + inner_r * 0.5, fill="#ffffff", outline="#cbd5e1")
 
-    # رسم پرنده توکا در مرکز
     bird_pts = [
         cx - radius * 0.2, cy + radius * 0.1,
         cx - radius * 0.1, cy - radius * 0.2,
@@ -103,7 +102,7 @@ class TookaTarhApp(tk.Tk):
         btn_frame = tk.Frame(self, bg="#f8fafc")
         btn_frame.pack(fill=tk.X, padx=20, pady=10)
 
-        # دکمه‌های با رمز ادمین (سمت راست)
+        # دکمه‌های نیازمند رمز ادمین (سمت راست)
         tk.Button(
             btn_frame, text="➕ افزودن مدرک (ادمین)", font=("Tahoma", 9, "bold"),
             bg="#22c55e", fg="white", relief=tk.FLAT, padx=10, pady=6,
@@ -141,24 +140,12 @@ class TookaTarhApp(tk.Tk):
             command=self.open_file_location
         ).pack(side=tk.LEFT, padx=4)
 
-        # بخش اصلی (نمایش دو پنله همراه با پس‌زمینه لوگو)
+        # بخش اصلی نمایش دو پنله
         main_container = tk.Frame(self, bg="#f8fafc")
         main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
-        # بوم پس‌زمینه و لوگوی چرخ‌دنده
-        bg_canvas = tk.Canvas(main_container, bg="#ffffff", highlightthickness=1, highlightbackground="#cbd5e1")
-        bg_canvas.pack(fill=tk.BOTH, expand=True)
-
-        def draw_bg(event):
-            bg_canvas.delete("all")
-            w, h = event.width, event.height
-            draw_tooka_logo(bg_canvas, w // 2, h // 2, min(w, h) // 4)
-
-        bg_canvas.bind("", draw_bg)
-
-        # تقسیم‌بندی دو قسمتی (راست: پوشه‌ها / چپ: فایل‌ها)
-        paned = ttk.PanedWindow(bg_canvas, orient=tk.HORIZONTAL)
-        paned.place(relx=0, rely=0, relwidth=1, relheight=1)
+        paned = ttk.PanedWindow(main_container, orient=tk.HORIZONTAL)
+        paned.pack(fill=tk.BOTH, expand=True)
 
         # پنل راست: لیست پوشه‌ها
         right_frame = tk.Frame(paned, bg="#ffffff")
